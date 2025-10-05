@@ -1,0 +1,53 @@
+package internal
+
+import (
+	"context"
+	"database/sql"
+
+	model "github.com/abhiii71/orderStream/account/models"
+)
+
+type AccountRepository interface {
+	Close() error
+	PutAccount(ctx context.Context, a model.Account) (*model.Account, error)
+	GetAccountByEmail(ctx context.Context, email string) (*model.Account, error)
+}
+
+type accountRepo struct {
+	db *sql.DB
+}
+
+func NewAccountRepo(db *sql.DB) AccountRepository {
+	return &accountRepo{db: db}
+}
+
+func (r *accountRepo) Close() error {
+	return r.db.Close()
+}
+
+func (r *accountRepo) PutAccount(ctx context.Context, a model.Account) (*model.Account, error) {
+	query := `Insert into accounts (id, name, email, password) VALUES($1, $2, $3, $4)`
+
+	_, err := r.db.Exec(query, a.ID, a.Name, a.Email, a.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+func (r *accountRepo) GetAccountByEmail(ctx context.Context, email string) (*model.Account, error) {
+	var account model.Account
+	query := `Select id, name, email, password FROM accounts where email=$1`
+
+	err := r.db.QueryRowContext(ctx, query, email).Scan(&account.ID, &account.Name, &account.Email, &account.Password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+
+		} else {
+			return nil, err
+		}
+	}
+
+	return &account, nil
+}
