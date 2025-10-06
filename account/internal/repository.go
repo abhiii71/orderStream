@@ -13,19 +13,19 @@ type AccountRepository interface {
 	GetAccountByEmail(ctx context.Context, email string) (*model.Account, error)
 }
 
-type accountRepo struct {
+type repo struct {
 	db *sql.DB
 }
 
-func NewAccountRepo(db *sql.DB) AccountRepository {
-	return &accountRepo{db: db}
+func Newrepo(db *sql.DB) AccountRepository {
+	return &repo{db: db}
 }
 
-func (r *accountRepo) Close() error {
+func (r *repo) Close() error {
 	return r.db.Close()
 }
 
-func (r *accountRepo) PutAccount(ctx context.Context, a model.Account) (*model.Account, error) {
+func (r *repo) PutAccount(ctx context.Context, a model.Account) (*model.Account, error) {
 	query := `Insert into accounts (id, name, email, password) VALUES($1, $2, $3, $4)`
 
 	_, err := r.db.Exec(query, a.ID, a.Name, a.Email, a.Password)
@@ -35,7 +35,7 @@ func (r *accountRepo) PutAccount(ctx context.Context, a model.Account) (*model.A
 	return &a, nil
 }
 
-func (r *accountRepo) GetAccountByEmail(ctx context.Context, email string) (*model.Account, error) {
+func (r *repo) GetAccountByEmail(ctx context.Context, email string) (*model.Account, error) {
 	var account model.Account
 	query := `Select id, name, email, password FROM accounts where email=$1`
 
