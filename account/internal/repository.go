@@ -17,7 +17,7 @@ type repo struct {
 	db *sql.DB
 }
 
-func Newrepo(db *sql.DB) AccountRepository {
+func NewAccountRepository(db *sql.DB) AccountRepository {
 	return &repo{db: db}
 }
 
@@ -26,9 +26,9 @@ func (r *repo) Close() error {
 }
 
 func (r *repo) PutAccount(ctx context.Context, a model.Account) (*model.Account, error) {
-	query := `Insert into accounts (id, name, email, password) VALUES($1, $2, $3, $4)`
+	query := `Insert into accounts (name, email, password) VALUES($1, $2, $3)`
 
-	_, err := r.db.Exec(query, a.ID, a.Name, a.Email, a.Password)
+	_, err := r.db.Exec(query, a.Name, a.Email, a.Password)
 	if err != nil {
 		return nil, err
 	}

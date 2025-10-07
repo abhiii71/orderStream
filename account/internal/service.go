@@ -21,13 +21,49 @@ func Newservice(r AccountRepository) AccountService {
 	return &service{r}
 }
 
+// func (s *service) Register(ctx context.Context, name, email, password string) (string, error) {
+// 	_, err := s.repo.GetAccountByEmail(ctx, email)
+// 	if err == nil {
+// 		return "", errors.New("account already exists!")
+// 	}
+
+// 	// hased the password to save into db
+// 	hashedPassword, err := crypt.HashPassword(password)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	acc := model.Account{
+// 		Name:     name,
+// 		Email:    email,
+// 		Password: hashedPassword,
+// 	}
+
+// 	// if email not exists already in db then create account
+// 	account, err := s.repo.PutAccount(ctx, acc)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	// generate token
+// 	token, err := auth.GenerateToken(account.ID)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return token, nil
+// }
+
 func (s *service) Register(ctx context.Context, name, email, password string) (string, error) {
-	_, err := s.repo.GetAccountByEmail(ctx, email)
-	if err == nil {
+	account, err := s.repo.GetAccountByEmail(ctx, email)
+	if err != nil {
+		return "", err
+	}
+	if account != nil {
 		return "", errors.New("account already exists!")
 	}
 
-	// hased the password to save into db
+	// hash password
 	hashedPassword, err := crypt.HashPassword(password)
 	if err != nil {
 		return "", err
@@ -39,8 +75,7 @@ func (s *service) Register(ctx context.Context, name, email, password string) (s
 		Password: hashedPassword,
 	}
 
-	// if email not exists already in db then create account
-	account, err := s.repo.PutAccount(ctx, acc)
+	account, err = s.repo.PutAccount(ctx, acc)
 	if err != nil {
 		return "", err
 	}
