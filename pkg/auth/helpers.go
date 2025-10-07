@@ -19,10 +19,10 @@ func GetUserId(ctx context.Context, abort bool) string {
 }
 
 func GetUserIdInt(ctx context.Context, abort bool) (int, error) {
-	accountId, ok := ctx.Value(contextkeys.UserIdKey).(uint64)
+	accountId, ok := ctx.Value(contextkeys.UserIDKey).(uint64)
 	if !ok {
 		if abort {
-			ginContext, _ := ctx.Value(contextkeys.UserIdKey).(*gin.Context)
+			ginContext, _ := ctx.Value(contextkeys.UserIDKey).(*gin.Context)
 			ginContext.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		}
 		return 0, errors.New("UserId not found in  context")

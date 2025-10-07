@@ -14,6 +14,7 @@ type JWTCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+// Use HS256 instead of ES256
 func GenerateToken(userId uint64) (string, error) {
 	claims := &JWTCustomClaims{
 		UserID: userId,
@@ -23,7 +24,7 @@ func GenerateToken(userId uint64) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) // <-- changed here
 	return token.SignedString([]byte(config.SecretKey))
 }
 
@@ -31,11 +32,11 @@ func ValidateToken(encodedToken string) (*jwt.Token, error) {
 	token, err := jwt.ParseWithClaims(encodedToken,
 		&JWTCustomClaims{},
 		func(t *jwt.Token) (interface{}, error) {
+			// Check for HS256
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
 			return []byte(config.SecretKey), nil
-
 		},
 	)
 	if err != nil {
@@ -44,7 +45,7 @@ func ValidateToken(encodedToken string) (*jwt.Token, error) {
 
 	if claims, ok := token.Claims.(*JWTCustomClaims); ok && token.Valid {
 		if claims.Issuer != config.Issuer {
-			return nil, errors.New("invalid Issuer in token")
+			return nil, errors.New("invalid issuer in token")
 		}
 		return token, nil
 	}
