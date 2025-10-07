@@ -33,7 +33,7 @@ message GetAccountsRequest {
 }
 
 message GetAccountsResponse  {
-repeated Account account = 1;
+repeated Account accounts = 1;
 }
 
 

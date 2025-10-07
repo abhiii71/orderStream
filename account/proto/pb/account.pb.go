@@ -292,7 +292,7 @@ func (x *GetAccountsRequest) GetTake() uint64 {
 
 type GetAccountsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Account       []*Account             `protobuf:"bytes,1,rep,name=account,proto3" json:"account,omitempty"`
+	Accounts      []*Account             `protobuf:"bytes,1,rep,name=accounts,proto3" json:"accounts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -327,9 +327,9 @@ func (*GetAccountsResponse) Descriptor() ([]byte, []int) {
 	return file_account_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *GetAccountsResponse) GetAccount() []*Account {
+func (x *GetAccountsResponse) GetAccounts() []*Account {
 	if x != nil {
-		return x.Account
+		return x.Accounts
 	}
 	return nil
 }
@@ -354,9 +354,9 @@ const file_account_proto_rawDesc = "" +
 	"\aaccount\x18\x01 \x01(\v2\v.pb.AccountR\aaccount\"<\n" +
 	"\x12GetAccountsRequest\x12\x12\n" +
 	"\x04skip\x18\x01 \x01(\x04R\x04skip\x12\x12\n" +
-	"\x04take\x18\x02 \x01(\x04R\x04take\"<\n" +
-	"\x13GetAccountsResponse\x12%\n" +
-	"\aaccount\x18\x01 \x03(\v2\v.pb.AccountR\aaccount2\x91\x02\n" +
+	"\x04take\x18\x02 \x01(\x04R\x04take\">\n" +
+	"\x13GetAccountsResponse\x12'\n" +
+	"\baccounts\x18\x01 \x03(\v2\v.pb.AccountR\baccounts2\x91\x02\n" +
 	"\x0eAccountService\x12?\n" +
 	"\bRegister\x12\x13.pb.RegisterRequest\x1a\x1c.google.protobuf.StringValue\"\x00\x129\n" +
 	"\x05Login\x12\x10.pb.LoginRequest\x1a\x1c.google.protobuf.StringValue\"\x00\x12A\n" +
@@ -389,7 +389,7 @@ var file_account_proto_goTypes = []any{
 }
 var file_account_proto_depIdxs = []int32{
 	0, // 0: pb.AccountResponse.account:type_name -> pb.Account
-	0, // 1: pb.GetAccountsResponse.account:type_name -> pb.Account
+	0, // 1: pb.GetAccountsResponse.accounts:type_name -> pb.Account
 	2, // 2: pb.AccountService.Register:input_type -> pb.RegisterRequest
 	1, // 3: pb.AccountService.Login:input_type -> pb.LoginRequest
 	6, // 4: pb.AccountService.GetAccount:input_type -> google.protobuf.UInt64Value
