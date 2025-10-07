@@ -39,3 +39,40 @@ func (s *grpcServer) Register(ctx context.Context, request *pb.RegisterRequest) 
 		Value: token,
 	}, nil
 }
+
+func (s *grpcServer) Login(ctx context.Context, request *pb.LoginRequest) (*wrapperspb.StringValue, error) {
+	token, err := s.service.Login(ctx, request.Email, request.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &wrapperspb.StringValue{
+		Value: token,
+	}, nil
+}
+
+func (s *grpcServer) GetAccount(ctx context.Context, request *wrapperspb.UInt64Value) (*pb.AccountResponse, error) {
+	account, err := s.service.GetAccount(ctx, request.Value)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AccountResponse{Account: &pb.Account{
+		Id:   uint64(account.ID),
+		Name: account.Name,
+	}}, nil
+}
+
+func (s *grpcServer) GetAccounts(ctx context.Context, r *pb.GetAccountsRequest) (*pb.GetAccountsResponse, error) {
+	getAccounts, err := s.service.GetAccounts(ctx, r.Skip, r.Take)
+	if err != nil {
+		return nil, err
+	}
+	var accounts []*pb.Account
+	for _, getAccount := range getAccounts {
+		accounts = append(accounts, &pb.Account{
+			Id:   uint64(int(getAccount.ID)),
+			Name: getAccount.Name,
+		},
+		)
+	}
+	return &pb.GetAccountsResponse{Accounts: accounts}, nil
+}

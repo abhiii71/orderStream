@@ -11,6 +11,9 @@ import (
 
 type AccountService interface {
 	Register(ctx context.Context, name, email, password string) (string, error)
+	Login(ctx context.Context, email, password string) (string, error)
+	GetAccount(ctx context.Context, id uint64) (*model.Account, error)
+	GetAccounts(ctx context.Context, skip uint64, take uint64) ([]model.Account, error)
 }
 
 type service struct {
@@ -20,39 +23,6 @@ type service struct {
 func Newservice(r AccountRepository) AccountService {
 	return &service{r}
 }
-
-// func (s *service) Register(ctx context.Context, name, email, password string) (string, error) {
-// 	_, err := s.repo.GetAccountByEmail(ctx, email)
-// 	if err == nil {
-// 		return "", errors.New("account already exists!")
-// 	}
-
-// 	// hased the password to save into db
-// 	hashedPassword, err := crypt.HashPassword(password)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	acc := model.Account{
-// 		Name:     name,
-// 		Email:    email,
-// 		Password: hashedPassword,
-// 	}
-
-// 	// if email not exists already in db then create account
-// 	account, err := s.repo.PutAccount(ctx, acc)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// generate token
-// 	token, err := auth.GenerateToken(account.ID)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return token, nil
-// }
 
 func (s *service) Register(ctx context.Context, name, email, password string) (string, error) {
 	account, err := s.repo.GetAccountByEmail(ctx, email)
@@ -87,4 +57,34 @@ func (s *service) Register(ctx context.Context, name, email, password string) (s
 	}
 
 	return token, nil
+}
+
+func (s *service) Login(ctx context.Context, email, password string) (string, error) {
+	account, err := s.repo.GetAccountByEmail(ctx, email)
+	if err != nil {
+		return "", nil
+	}
+
+	err = crypt.VerifyPassword(password, account.Password)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := auth.GenerateToken(account.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (s *service) GetAccount(ctx context.Context, id uint64) (*model.Account, error) {
+	return s.repo.GetAccountByID(ctx, id)
+}
+
+func (s *service) GetAccounts(ctx context.Context, skip uint64, take uint64) ([]model.Account, error) {
+	if take > 100 || skip == 0 && take == 0 {
+		take = 100
+	}
+	return s.repo.ListAccounts(ctx, skip, take)
 }
