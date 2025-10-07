@@ -1,32 +1,60 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
+	"os"
 	"time"
 
-	"github.com/abhiii71/orderStream/account/config"
 	"github.com/abhiii71/orderStream/account/internal"
+	"github.com/joho/godotenv"
 	"github.com/tinrab/retry"
-	"gorm.io/driver/postgres"
+
+	_ "github.com/jackc/pgx/v5/stdlib" // PostgreSQL driver
 )
 
 func main() {
-	var repo internal.AccountRepository
+	err := godotenv.Load(".env") // relative to project root
+	if err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
 
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL not set")
+	}
+
+	log.Println("Using DATABASE_URL:", dbURL)
+
+	var repository internal.AccountRepository
+
+	// Retry connecting to DB
 	retry.ForeverSleep(2*time.Second, func(_ int) (err error) {
-		db, err := sql.Open(postgres.Open(config.DatabaseURL), &sql.Config{})
+		db, err := sql.Open("pgx", dbURL)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("DB connection error:", err)
+			return err
 		}
 
-		repo := internal.Newrepo(db)
+		// Test connection
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := db.PingContext(ctx); err != nil {
+			log.Println("DB ping error:", err)
+			return err
+		}
 
-		return
+		// Wrap db in PostgresAccountRepository
+		repository = internal.NewAccountRepository(db)
+		return nil
 	})
 
-	defer repo.Close()
+	defer repository.Close()
+
 	log.Println("Listening on port 8080...")
-	service := internal.Newservice(repo)
+
+	service := internal.Newservice(repository)
+
 	log.Fatal(internal.ListenGRPC(service, 8080))
 }
