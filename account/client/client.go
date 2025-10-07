@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 
+	model "github.com/abhiii71/orderStream/account/models"
 	"github.com/abhiii71/orderStream/account/proto/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type Client struct {
@@ -42,4 +44,47 @@ func (c *Client) Register(ctx context.Context, name, email, password string) (st
 
 	return response.Value, nil
 
+}
+
+func (c *Client) Login(ctx context.Context, email, password string) (string, error) {
+	response, err := c.service.Login(ctx, &pb.LoginRequest{
+		Email:    email,
+		Password: password,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return response.Value, nil
+}
+
+func (c *Client) GetAccount(ctx context.Context, Id uint64) (*model.Account, error) {
+	r, err := c.service.GetAccount(ctx, &wrapperspb.UInt64Value{Value: Id})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Account{
+		ID:    r.Account.GetId(),
+		Name:  r.Account.GetName(),
+		Email: r.Account.GetEmail(),
+	}, nil
+}
+
+func (c *Client) GetAccounts(ctx context.Context, skip, take uint64) ([]model.Account, error) {
+	r, err := c.service.GetAccounts(ctx, &pb.GetAccountsRequest{Take: take, Skip: skip})
+	if err != nil {
+		return nil, err
+	}
+
+	var accounts []model.Account
+	for _, a := range r.Accounts {
+		accounts = append(accounts, model.Account{
+			ID:    a.GetId(),
+			Name:  a.GetName(),
+			Email: a.GetEmail(),
+		})
+	}
+
+	return accounts, nil
 }
