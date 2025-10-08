@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/abhiii71/orderStream/account"
 	"github.com/abhiii71/orderStream/account/internal"
 	"github.com/joho/godotenv"
 	"github.com/tinrab/retry"
@@ -25,7 +26,7 @@ func main() {
 		log.Fatal("DATABASE_URL not set")
 	}
 
-	log.Println("Using DATABASE_URL:", dbURL)
+	log.Println("DATABASE_URL:", dbURL)
 
 	var repository internal.AccountRepository
 
@@ -51,10 +52,10 @@ func main() {
 	})
 
 	defer repository.Close()
-
-	log.Println("Listening on port 8080...")
+	
+	port := account.Port
+	log.Printf("Listening on port %d...", port)
 
 	service := internal.Newservice(repository)
-
-	log.Fatal(internal.ListenGRPC(service, 8080))
+	log.Fatal(internal.ListenGRPC(service, port))
 }
