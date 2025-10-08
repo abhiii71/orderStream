@@ -18,7 +18,7 @@ import (
 func main() {
 	err := godotenv.Load(".env") // relative to project root
 	if err != nil {
-		log.Println("No .env file found, using environment variables")
+		log.Println(".env file not found!")
 	}
 
 	dbURL := os.Getenv("DATABASE_URL")
@@ -52,7 +52,7 @@ func main() {
 	})
 
 	defer repository.Close()
-	
+
 	port := account.Port
 	log.Printf("Listening on port %d...", port)
 
