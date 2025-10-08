@@ -30,7 +30,7 @@ func (s *service) Register(ctx context.Context, name, email, password string) (s
 		return "", err
 	}
 	if account != nil {
-		return "", errors.New("account already exists!")
+		return "", errors.New("account already exists")
 	}
 
 	// hash password
