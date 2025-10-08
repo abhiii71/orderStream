@@ -92,13 +92,13 @@ CREATE TABLE accounts (
 2. Start the gRPC server:
 
    ```bash
-   go run main.go
+   go run account/cmd/account/main.go
    ```
 
 3. You should see logs like:
 
    ```
-   gRPC server listening on port 8080
+   gRPC server listening on port 8080(something like that)
    Connected to PostgreSQL at localhost:5432
    ```
 
@@ -121,7 +121,7 @@ grpcurl -plaintext -d '{"email":"abhishek.work71@gmail.com","password":"123456"}
 ### 3️⃣ Get account by ID
 
 ```bash
-grpcurl -plaintext -d '{"value":1}' localhost:8080 pb.AccountService/GetAccount
+grpcurl -plaintext -d '1' localhost:8080 pb.AccountService/GetAccount
 ```
 
 ### 4️⃣ List all accounts
