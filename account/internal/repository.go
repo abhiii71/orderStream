@@ -28,9 +28,9 @@ func (r *repo) Close() error {
 }
 
 func (r *repo) PutAccount(ctx context.Context, a model.Account) (*model.Account, error) {
-	query := `Insert into accounts (name, email, password) VALUES($1, $2, $3)`
+	query := `Insert into accounts (name, email, password) VALUES($1, $2, $3) RETURNING id`
 
-	_, err := r.db.Exec(query, a.Name, a.Email, a.Password)
+	err := r.db.QueryRowContext(ctx, query, a.Name, a.Email, a.Password).Scan(&a.ID)
 	if err != nil {
 		return nil, err
 	}
