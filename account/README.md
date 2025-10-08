@@ -1,68 +1,81 @@
-# 🧩 Account Microservice
+---
+
+# Account Microservice
 
 This microservice provides account registration, authentication (login), and account retrieval functionalities using **gRPC** and **PostgreSQL**.
 It is designed as a modular component for the `orderStream` system but can also run independently for testing and development.
 
 ---
 
-## 🚀 Features
+## Features
 
 * Register a new account
 * Login with email and password
 * Fetch account details by ID
-* List all accounts (with pagination support)
-* PostgreSQL as database
+* List all accounts with pagination support
+* PostgreSQL as the database
 * gRPC-based service interface with reflection enabled
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 account/
-├── internal/           # Database and repository logic
-│   └── repo.go
-├── models/             # Data models
-│   └── account.go
-├── proto/              # Protobuf definitions and generated Go code
-│   └── pb/
 ├── client/             # gRPC client for interacting with the service
 │   └── client.go
-├── service/            # gRPC server implementation
-│   └── account_service.go
-├── main.go             # Entry point for the service
-├── go.mod / go.sum
-└── .env                # Environment variables
+├── cmd/                # Main entry point
+│   └── account/main.go
+├── config/             # Environment variables and config
+│   └── config.go
+├── constants.go        # Shared constants
+├── db/
+│   └── migrations/     # SQL migration files
+│       ├── 000001_create_accounts_table.up.sql
+│       └── 000001_create_accounts_table.down.sql
+├── internal/           # Service, server, and repository logic
+│   ├── repository.go
+│   ├── server.go
+│   └── service.go
+├── models/             # Data models
+│   └── account.go
+├── proto/              # Protobuf definitions
+│   ├── account.proto
+│   └── pb/
+│       ├── account.pb.go
+│       └── account_grpc.pb.go
+├── README.md           # This file
+└── tests/              # Unit tests
+    ├── repo_test.go
+    └── svc_test.go
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
-Before running the service, ensure the following are installed:
-
-* **Go** ≥ 1.21
-* **PostgreSQL**
-* **grpcurl** (for manual testing)
+* Go ≥ 1.21
+* PostgreSQL
+* grpcurl (for manual testing)
 
 ---
 
-## 🧾 Environment Setup
+## Environment Setup
 
 Create a `.env` file in the project root:
 
 ```bash
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/order_stream?sslmode=disable
 GRPC_PORT=8080
-SECRET_KEY="secret_key"
+SECRET_KEY="your_secret_key_here"
 ISSUER="order-stream"
 ```
 
 ---
 
-## 🗄️ Database Setup
+## Database Setup
 
-Start PostgreSQL locally, then create the database and `accounts` table:
+### Option 1: Run SQL manually
 
 ```sql
 CREATE DATABASE order_stream;
@@ -79,52 +92,60 @@ CREATE TABLE accounts (
 );
 ```
 
+### Option 2: Use migrations (recommended)
+
+If you have migration files in the `migrations/` directory:
+
+```bash
+migrate -path ./migrations -database "postgres://postgres:postgres@localhost:5432/order_stream?sslmode=disable" up
+```
+
 ---
 
-## ▶️ Run the Service
+## Run the Service
 
 1. Install dependencies:
 
-   ```bash
-   go mod tidy
-   ```
+```bash
+go mod tidy
+```
 
 2. Start the gRPC server:
 
-   ```bash
-   go run account/cmd/account/main.go
-   ```
+```bash
+go run account/cmd/account/main.go
+```
 
-3. You should see logs like:
+3. Expected logs:
 
-   ```
-   gRPC server listening on port 8080(something like that)
-   Connected to PostgreSQL at localhost:5432
-   ```
+```
+gRPC server listening on port 8080
+Connected to PostgreSQL at localhost:5432
+```
 
 ---
 
-## 🧪 Test the API with grpcurl
+## Test the API with grpcurl
 
-### 1️⃣ Register a new account
+### Register a new account
 
 ```bash
 grpcurl -plaintext -d '{"name":"Abhishek","email":"abhishek.work71@gmail.com","password":"123456"}' localhost:8080 pb.AccountService/Register
 ```
 
-### 2️⃣ Login
+### Login
 
 ```bash
 grpcurl -plaintext -d '{"email":"abhishek.work71@gmail.com","password":"123456"}' localhost:8080 pb.AccountService/Login
 ```
 
-### 3️⃣ Get account by ID
+### Get account by ID
 
 ```bash
 grpcurl -plaintext -d '1' localhost:8080 pb.AccountService/GetAccount
 ```
 
-### 4️⃣ List all accounts
+### List all accounts
 
 ```bash
 grpcurl -plaintext -d '{"skip":0,"take":10}' localhost:8080 pb.AccountService/GetAccounts
@@ -132,25 +153,26 @@ grpcurl -plaintext -d '{"skip":0,"take":10}' localhost:8080 pb.AccountService/Ge
 
 ---
 
-## 🧩 Notes
+## Notes
 
-* Reflection is enabled — you can list all available services:
+* Reflection is enabled, so you can list all available services:
 
-  ```bash
-  grpcurl -plaintext localhost:8080 list
-  ```
-* JWT signing uses the provided EC private key (`SECRET_KEY`).
+```bash
+grpcurl -plaintext localhost:8080 list
+```
+
+* JWT signing uses the `SECRET_KEY` from the environment.
 * For production, use environment variables securely and connect to a managed PostgreSQL instance.
 
 ---
 
-## 📦 Example Response
+## Example Responses
 
 **Register:**
 
 ```json
 {
-  "value": "Account registered successfully"
+  "value": "1"
 }
 ```
 
@@ -168,7 +190,7 @@ grpcurl -plaintext -d '{"skip":0,"take":10}' localhost:8080 pb.AccountService/Ge
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 * **Language:** Go
 * **Framework:** gRPC
