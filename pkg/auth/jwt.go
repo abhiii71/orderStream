@@ -24,7 +24,7 @@ func GenerateToken(userId uint64) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) // <-- changed here
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) 
 	return token.SignedString([]byte(config.SecretKey))
 }
 

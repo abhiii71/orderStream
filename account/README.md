@@ -174,6 +174,6 @@ grpcurl -plaintext -d '{"skip":0,"take":10}' localhost:8080 pb.AccountService/Ge
 * **Framework:** gRPC
 * **Database:** PostgreSQL
 * **Protocol Buffers:** v3
-* **Authentication:** JWT (ECDSA)
+* **Authentication:** JWT (HS256)
 
 ---
