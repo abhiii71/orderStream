@@ -56,8 +56,9 @@ func (s *grpcServer) GetAccount(ctx context.Context, request *wrapperspb.UInt64V
 		return nil, err
 	}
 	return &pb.AccountResponse{Account: &pb.Account{
-		Id:   uint64(account.ID),
-		Name: account.Name,
+		Id:    uint64(int(account.ID)),
+		Name:  account.Name,
+		Email: account.Email,
 	}}, nil
 }
 
@@ -69,8 +70,9 @@ func (s *grpcServer) GetAccounts(ctx context.Context, r *pb.GetAccountsRequest) 
 	var accounts []*pb.Account
 	for _, getAccount := range getAccounts {
 		accounts = append(accounts, &pb.Account{
-			Id:   uint64(int(getAccount.ID)),
-			Name: getAccount.Name,
+			Id:    uint64(int(getAccount.ID)),
+			Name:  getAccount.Name,
+			Email: getAccount.Email,
 		},
 		)
 	}
