@@ -230,7 +230,7 @@ func (x *OrderProduct) GetQuantity() uint32 {
 type PostOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     uint64                 `protobuf:"varint,1,opt,name=accountId,proto3" json:"accountId,omitempty"`
-	Products      []*OrderProduct        `protobuf:"bytes,3,rep,name=products,proto3" json:"products,omitempty"`
+	Products      []*OrderProduct        `protobuf:"bytes,2,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -443,7 +443,7 @@ const file_order_proto_rawDesc = "" +
 	"\bquantity\x18\x02 \x01(\rR\bquantity\"^\n" +
 	"\x10PostOrderRequest\x12\x1c\n" +
 	"\taccountId\x18\x01 \x01(\x04R\taccountId\x12,\n" +
-	"\bproducts\x18\x03 \x03(\v2\x10.pb.OrderProductR\bproducts\"4\n" +
+	"\bproducts\x18\x02 \x03(\v2\x10.pb.OrderProductR\bproducts\"4\n" +
 	"\x11PostOrderResponse\x12\x1f\n" +
 	"\x05order\x18\x01 \x01(\v2\t.pb.OrderR\x05order\"@\n" +
 	"\x1bGetOrdersForAccountResponse\x12!\n" +

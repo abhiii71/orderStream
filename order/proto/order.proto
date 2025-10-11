@@ -29,7 +29,7 @@ message OrderProduct {
 
 message PostOrderRequest {
   uint64 accountId = 1;
-  repeated OrderProduct products = 3;
+  repeated OrderProduct products = 2;
 }
 
 message PostOrderResponse {
