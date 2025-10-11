@@ -38,7 +38,7 @@ func (c *Client) PostOrder(ctx context.Context, accountId uint64, products []*mo
 	var protoProducts []*pb.OrderProduct
 	for _, p := range products {
 		protoProducts = append(protoProducts, &pb.OrderProduct{
-			Id:       string(p.ID),
+			Id:       p.ID,
 			Quantity: p.Quantity,
 		})
 	}
