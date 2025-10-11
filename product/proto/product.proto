@@ -53,7 +53,7 @@ service ProductService {
 
     rpc PostProduct (CreateProductRequest) returns (ProductResponse) {}
     rpc GetProduct (google.protobuf.StringValue) returns (ProductResponse) {}
-    rpc GetProducts (GetProductsRequest) returns (ProductResponse) {}
+    rpc GetProducts (GetProductsRequest) returns (ProductsResponse) {}
     rpc UpdateProduct (UpdateProductRequest) returns (ProductResponse) {}
     rpc DeleteProduct (DeleteProductRequest) returns (google.protobuf.Empty) {}
 }

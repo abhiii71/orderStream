@@ -484,12 +484,12 @@ const file_product_proto_rawDesc = "" +
 	"\x0fProductResponse\x12%\n" +
 	"\aproduct\x18\x01 \x01(\v2\v.pb.ProductR\aproduct\";\n" +
 	"\x10ProductsResponse\x12'\n" +
-	"\bproducts\x18\x01 \x03(\v2\v.pb.ProductR\bproducts2\xd8\x02\n" +
+	"\bproducts\x18\x01 \x03(\v2\v.pb.ProductR\bproducts2\xd9\x02\n" +
 	"\x0eProductService\x12>\n" +
 	"\vPostProduct\x12\x18.pb.CreateProductRequest\x1a\x13.pb.ProductResponse\"\x00\x12A\n" +
 	"\n" +
-	"GetProduct\x12\x1c.google.protobuf.StringValue\x1a\x13.pb.ProductResponse\"\x00\x12<\n" +
-	"\vGetProducts\x12\x16.pb.GetProductsRequest\x1a\x13.pb.ProductResponse\"\x00\x12@\n" +
+	"GetProduct\x12\x1c.google.protobuf.StringValue\x1a\x13.pb.ProductResponse\"\x00\x12=\n" +
+	"\vGetProducts\x12\x16.pb.GetProductsRequest\x1a\x14.pb.ProductsResponse\"\x00\x12@\n" +
 	"\rUpdateProduct\x12\x18.pb.UpdateProductRequest\x1a\x13.pb.ProductResponse\"\x00\x12C\n" +
 	"\rDeleteProduct\x12\x18.pb.DeleteProductRequest\x1a\x16.google.protobuf.Empty\"\x00B\x06Z\x04./pbb\x06proto3"
 
@@ -527,7 +527,7 @@ var file_product_proto_depIdxs = []int32{
 	4, // 6: pb.ProductService.DeleteProduct:input_type -> pb.DeleteProductRequest
 	5, // 7: pb.ProductService.PostProduct:output_type -> pb.ProductResponse
 	5, // 8: pb.ProductService.GetProduct:output_type -> pb.ProductResponse
-	5, // 9: pb.ProductService.GetProducts:output_type -> pb.ProductResponse
+	6, // 9: pb.ProductService.GetProducts:output_type -> pb.ProductsResponse
 	5, // 10: pb.ProductService.UpdateProduct:output_type -> pb.ProductResponse
 	8, // 11: pb.ProductService.DeleteProduct:output_type -> google.protobuf.Empty
 	7, // [7:12] is the sub-list for method output_type

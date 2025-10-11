@@ -34,7 +34,7 @@ const (
 type ProductServiceClient interface {
 	PostProduct(ctx context.Context, in *CreateProductRequest, opts ...grpc.CallOption) (*ProductResponse, error)
 	GetProduct(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*ProductResponse, error)
-	GetProducts(ctx context.Context, in *GetProductsRequest, opts ...grpc.CallOption) (*ProductResponse, error)
+	GetProducts(ctx context.Context, in *GetProductsRequest, opts ...grpc.CallOption) (*ProductsResponse, error)
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*ProductResponse, error)
 	DeleteProduct(ctx context.Context, in *DeleteProductRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -67,9 +67,9 @@ func (c *productServiceClient) GetProduct(ctx context.Context, in *wrapperspb.St
 	return out, nil
 }
 
-func (c *productServiceClient) GetProducts(ctx context.Context, in *GetProductsRequest, opts ...grpc.CallOption) (*ProductResponse, error) {
+func (c *productServiceClient) GetProducts(ctx context.Context, in *GetProductsRequest, opts ...grpc.CallOption) (*ProductsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ProductResponse)
+	out := new(ProductsResponse)
 	err := c.cc.Invoke(ctx, ProductService_GetProducts_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (c *productServiceClient) DeleteProduct(ctx context.Context, in *DeleteProd
 type ProductServiceServer interface {
 	PostProduct(context.Context, *CreateProductRequest) (*ProductResponse, error)
 	GetProduct(context.Context, *wrapperspb.StringValue) (*ProductResponse, error)
-	GetProducts(context.Context, *GetProductsRequest) (*ProductResponse, error)
+	GetProducts(context.Context, *GetProductsRequest) (*ProductsResponse, error)
 	UpdateProduct(context.Context, *UpdateProductRequest) (*ProductResponse, error)
 	DeleteProduct(context.Context, *DeleteProductRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedProductServiceServer()
@@ -122,7 +122,7 @@ func (UnimplementedProductServiceServer) PostProduct(context.Context, *CreatePro
 func (UnimplementedProductServiceServer) GetProduct(context.Context, *wrapperspb.StringValue) (*ProductResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProduct not implemented")
 }
-func (UnimplementedProductServiceServer) GetProducts(context.Context, *GetProductsRequest) (*ProductResponse, error) {
+func (UnimplementedProductServiceServer) GetProducts(context.Context, *GetProductsRequest) (*ProductsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProducts not implemented")
 }
 func (UnimplementedProductServiceServer) UpdateProduct(context.Context, *UpdateProductRequest) (*ProductResponse, error) {
