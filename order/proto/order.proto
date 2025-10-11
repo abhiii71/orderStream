@@ -7,51 +7,49 @@ package pb;
 option go_package = "./pb";
 
 message ProductInfo {
-    string id = 1;
-    string name = 2;
-    string description = 3;
-    double price = 4;
-    uint32 quantity = 5;
+  uint64 id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  uint32 quantity = 5;
 }
 
 message Order {
-    string orderId = 1;
-    bytes createdAt = 2;
-    uint64 accountId = 3;
-    double totalPrice = 4;
-    repeated ProductInfo product = 5;
+  uint64 id = 1;
+  bytes createdAt = 2;
+  uint64 accountId = 3;
+  double totalPrice = 4;
+  repeated ProductInfo products = 5;
 }
 
 message OrderProduct {
-    string id = 1;
-    uint32 quantity = 2;
+  string id = 1;
+  uint32 quantity = 2;
 }
 
 message PostOrderRequest {
-    uint64 accountId = 1;
-    repeated OrderProduct products = 2;
+  uint64 accountId = 1;
+  repeated OrderProduct products = 3;
 }
 
 message PostOrderResponse {
-    Order order = 1;
+  Order order = 1;
 }
 
 message GetOrdersForAccountResponse {
-    repeated Order orders = 1;
+  repeated Order orders = 1;
 }
 
 message UpdateOrderStatusRequest {
-    uint64 orderId = 1;
-    string status = 2;
+  uint64 orderId = 1;
+  string status = 2;
 }
 
 service OrderService {
-    rpc PostOrder(PostOrderRequest) returns (PostOrderResponse){
-    }
-    
-    rpc GetOrdersForAccount(google.protobuf.UInt64Value) returns (GetOrdersForAccountResponse){
-    }
-
-    rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (google.protobuf.Empty){
-    }
+  rpc PostOrder (PostOrderRequest) returns (PostOrderResponse) {
+  }
+  rpc GetOrdersForAccount (google.protobuf.UInt64Value) returns (GetOrdersForAccountResponse) {
+  }
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (google.protobuf.Empty) {
+  }
 }

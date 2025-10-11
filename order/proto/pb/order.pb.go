@@ -25,7 +25,7 @@ const (
 
 type ProductInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Price         float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
@@ -64,11 +64,11 @@ func (*ProductInfo) Descriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ProductInfo) GetId() string {
+func (x *ProductInfo) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *ProductInfo) GetName() string {
@@ -101,11 +101,11 @@ func (x *ProductInfo) GetQuantity() uint32 {
 
 type Order struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	OrderId       string                 `protobuf:"bytes,1,opt,name=orderId,proto3" json:"orderId,omitempty"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	CreatedAt     []byte                 `protobuf:"bytes,2,opt,name=createdAt,proto3" json:"createdAt,omitempty"`
 	AccountId     uint64                 `protobuf:"varint,3,opt,name=accountId,proto3" json:"accountId,omitempty"`
 	TotalPrice    float64                `protobuf:"fixed64,4,opt,name=totalPrice,proto3" json:"totalPrice,omitempty"`
-	Product       []*ProductInfo         `protobuf:"bytes,5,rep,name=product,proto3" json:"product,omitempty"`
+	Products      []*ProductInfo         `protobuf:"bytes,5,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -140,11 +140,11 @@ func (*Order) Descriptor() ([]byte, []int) {
 	return file_order_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Order) GetOrderId() string {
+func (x *Order) GetId() uint64 {
 	if x != nil {
-		return x.OrderId
+		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *Order) GetCreatedAt() []byte {
@@ -168,9 +168,9 @@ func (x *Order) GetTotalPrice() float64 {
 	return 0
 }
 
-func (x *Order) GetProduct() []*ProductInfo {
+func (x *Order) GetProducts() []*ProductInfo {
 	if x != nil {
-		return x.Product
+		return x.Products
 	}
 	return nil
 }
@@ -230,7 +230,7 @@ func (x *OrderProduct) GetQuantity() uint32 {
 type PostOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     uint64                 `protobuf:"varint,1,opt,name=accountId,proto3" json:"accountId,omitempty"`
-	Products      []*OrderProduct        `protobuf:"bytes,2,rep,name=products,proto3" json:"products,omitempty"`
+	Products      []*OrderProduct        `protobuf:"bytes,3,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -425,25 +425,25 @@ const file_order_proto_rawDesc = "" +
 	"\n" +
 	"\vorder.proto\x12\x02pb\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\x85\x01\n" +
 	"\vProductInfo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x1a\n" +
-	"\bquantity\x18\x05 \x01(\rR\bquantity\"\xa8\x01\n" +
-	"\x05Order\x12\x18\n" +
-	"\aorderId\x18\x01 \x01(\tR\aorderId\x12\x1c\n" +
+	"\bquantity\x18\x05 \x01(\rR\bquantity\"\xa0\x01\n" +
+	"\x05Order\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1c\n" +
 	"\tcreatedAt\x18\x02 \x01(\fR\tcreatedAt\x12\x1c\n" +
 	"\taccountId\x18\x03 \x01(\x04R\taccountId\x12\x1e\n" +
 	"\n" +
 	"totalPrice\x18\x04 \x01(\x01R\n" +
-	"totalPrice\x12)\n" +
-	"\aproduct\x18\x05 \x03(\v2\x0f.pb.ProductInfoR\aproduct\":\n" +
+	"totalPrice\x12+\n" +
+	"\bproducts\x18\x05 \x03(\v2\x0f.pb.ProductInfoR\bproducts\":\n" +
 	"\fOrderProduct\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\bquantity\x18\x02 \x01(\rR\bquantity\"^\n" +
 	"\x10PostOrderRequest\x12\x1c\n" +
 	"\taccountId\x18\x01 \x01(\x04R\taccountId\x12,\n" +
-	"\bproducts\x18\x02 \x03(\v2\x10.pb.OrderProductR\bproducts\"4\n" +
+	"\bproducts\x18\x03 \x03(\v2\x10.pb.OrderProductR\bproducts\"4\n" +
 	"\x11PostOrderResponse\x12\x1f\n" +
 	"\x05order\x18\x01 \x01(\v2\t.pb.OrderR\x05order\"@\n" +
 	"\x1bGetOrdersForAccountResponse\x12!\n" +
@@ -481,7 +481,7 @@ var file_order_proto_goTypes = []any{
 	(*emptypb.Empty)(nil),               // 8: google.protobuf.Empty
 }
 var file_order_proto_depIdxs = []int32{
-	0, // 0: pb.Order.product:type_name -> pb.ProductInfo
+	0, // 0: pb.Order.products:type_name -> pb.ProductInfo
 	2, // 1: pb.PostOrderRequest.products:type_name -> pb.OrderProduct
 	1, // 2: pb.PostOrderResponse.order:type_name -> pb.Order
 	1, // 3: pb.GetOrdersForAccountResponse.orders:type_name -> pb.Order
