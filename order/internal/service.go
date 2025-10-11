@@ -18,11 +18,11 @@ type Service interface {
 }
 
 type orderService struct {
-	repo     Repository
+	repo     OrderRepository
 	producer sarama.AsyncProducer
 }
 
-func NewOrderService(repository Repository, producer sarama.AsyncProducer) Service {
+func NewOrderService(repository OrderRepository, producer sarama.AsyncProducer) Service {
 	return &orderService{repository, producer}
 }
 
