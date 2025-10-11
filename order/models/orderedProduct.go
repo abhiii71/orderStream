@@ -1,8 +1,8 @@
 package models
 
 type ProductInfo struct {
-	Id        uint64
-	OrderID   uint64
+	Id        uint
+	OrderID   uint
 	ProductId string
 	Quantity  int
 }
