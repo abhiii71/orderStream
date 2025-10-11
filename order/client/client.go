@@ -93,7 +93,7 @@ func (c *Client) GetordersForAccount(ctx context.Context, accountID uint64) ([]m
 		var products []*models.OrderedProduct
 		for _, p := range orderProto.Products {
 			products = append(products, &models.OrderedProduct{
-				ID:          uint(p.Id),
+				ID:          p.Id,
 				Quantity:    p.Quantity,
 				Name:        p.Name,
 				Description: p.Description,
