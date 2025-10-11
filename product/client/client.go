@@ -41,7 +41,7 @@ func (c *Client) GetProduct(ctx context.Context, id string) (*models.Product, er
 	return &models.Product{
 		Id:         res.Product.Id,
 		Name:       res.Product.Name,
-		Decription: res.Product.Description,
+		Description: res.Product.Description,
 		Price:      res.Product.Price,
 		AccountId:  int(res.Product.GetAccountId()),
 	}, nil
@@ -61,11 +61,11 @@ func (c *Client) GetProducts(ctx context.Context, skip, take uint64, ids []strin
 	var products []models.Product
 	for _, p := range res.Products {
 		products = append(products, models.Product{
-			ID:          p.Id,
+			Id:          p.Id,
 			Name:        p.Name,
 			Description: p.Description,
 			Price:       p.Price,
-			AccountID:   int(p.AccountId),
+			AccountId:   int(p.AccountId),
 		})
 	}
 	return products, nil
@@ -85,7 +85,7 @@ func (c *Client) PostProduct(ctx context.Context, name, description string, pric
 	return &models.Product{
 		Id:         res.Product.Id,
 		Name:       res.Product.Name,
-		Decription: res.Product.Description,
+		Description: res.Product.Description,
 		Price:      res.Product.Price,
 		AccountId:  int(res.Product.GetAccountId()),
 	}, nil
@@ -106,7 +106,7 @@ func (c *Client) UpdateProduct(ctx context.Context, id, name, description string
 	return &models.Product{
 		Id:         res.Product.Id,
 		Name:       res.Product.Name,
-		Decription: res.Product.Description,
+		Description: res.Product.Description,
 		Price:      res.Product.Price,
 		AccountId:  int(res.Product.GetAccountId()),
 	}, nil
