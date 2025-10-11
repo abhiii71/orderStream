@@ -7,7 +7,7 @@ package pb;
 option go_package = "./pb";
 
 message ProductInfo {
-  uint64 id = 1;
+  string id = 1;
   string name = 2;
   string description = 3;
   double price = 4;
