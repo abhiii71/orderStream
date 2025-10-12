@@ -147,7 +147,7 @@ func (ds *paymentService) HandlePaymentWebhook(ctx context.Context, w http.Respo
 		return nil, err
 	}
 
-	err = ds.paymentRepository.updatedTransaction(ctx, updatedTransaction)
+	err = ds.paymentRepository.UpdatedTransaction(ctx, updatedTransaction)
 	if err != nil {
 		return nil, err
 	}
