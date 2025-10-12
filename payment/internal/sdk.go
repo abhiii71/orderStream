@@ -2,8 +2,19 @@ package internal
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 
+	"github.com/abhiii71/orderStream/payment"
+	"github.com/abhiii71/orderStream/payment/config"
+	"github.com/abhiii71/orderStream/payment/dto"
 	"github.com/abhiii71/orderStream/payment/models"
 	"github.com/dodopayments/dodopayments-go"
 	"github.com/dodopayments/dodopayments-go/option"
@@ -13,7 +24,7 @@ type PaymentClient interface {
 	CreateProduct(ctx context.Context, name string, price int64, currency dodopayments.Currency, taxCategory dodopayments.TaxCategory, customerId, productId string) (*dodopayments.Product, error)
 	UpdateProduct(ctx context.Context, productId, name string, price int64) error
 	ArchiveProduct(ctx context.Context, productId string) error
-	CreateCutomer(ctx context.Context, userId int64, name, email string) (*models.Customer, error)
+	CreateCustomer(ctx context.Context, userId int64, name, email string) (*models.Customer, error)
 	CreateCustomerSession(ctx context.Context, customerId string) (string, error)
 	CreateCheckoutSession(ctx context.Context, userId int64, customerId string, redirect string, dodoProducts []dodopayments.CheckoutSessionRequestProductCartParam, orderId uint64) (checkoutURL string, err error)
 	HandleWebhook(w http.ResponseWriter, r *http.Request) (*models.Transaction, error)
@@ -39,39 +50,150 @@ type dodoClient struct {
 	client *dodopayments.Client
 }
 
-
-func(d *dodoClient)	CreateProduct(ctx context.Context, name string, price int64, currency dodopayments.Currency, taxCategory dodopayments.TaxCategory, customerId, productId string) (*dodopayments.Product, error){
-	product, err := d.client.Products.New(ctx , dodopayments.ProductNewParams{
+func (d *dodoClient) CreateProduct(ctx context.Context, name string, price int64, currency dodopayments.Currency, taxCategory dodopayments.TaxCategory, customerId, productId string) (*dodopayments.Product, error) {
+	product, err := d.client.Products.New(ctx, dodopayments.ProductNewParams{
 		Name: dodopayments.F(name),
 		Price: dodopayments.F[dodopayments.PriceUnionParam](
 			dodopayments.PriceOneTimePriceParam{
-			Price: dodopayments.F(price),
-			Currency: dodopayments.F(currency),
-			Discount: dodopayments.F[int64](0),
-		},
-	),
-	TaxCategory: dodopayments.F(taxCategory),
-})
-if err != nil {
-	return nil,err 
-}
-return prodct, nil
-}
-
-func(d *dodoClient)UpdateProduct(ctx context.Context, productId, name string, price int64) error{
-
-}
-func(d *dodoClient)	ArchiveProduct(ctx context.Context, productId string) error {
-
-}
-
-func(d *dodoClient)	CreateCutomer(ctx context.Context, userId int64, name, email string) (*models.Customer, error){
-
-}
-	func(d *dodoClient)CreateCustomerSession(ctx context.Context, customerId string) (string, error)
-	{
+				Price:    dodopayments.F(price),
+				Currency: dodopayments.F(currency),
+				Discount: dodopayments.F[int64](0),
+			},
+		),
+		TaxCategory: dodopayments.F(taxCategory),
+	})
+	if err != nil {
+		return nil, err
 	}
-	func(d *dodoClient)CreateCheckoutSession(ctx context.Context, userId int64, customerId string, redirect string, dodoProducts []dodopayments.CheckoutSessionRequestProductCartParam, orderId uint64) (checkoutURL string, err error)
-	
-	{}
-	func(d *dodoClient)HandleWebhook(w http.ResponseWriter, r *http.Request) (*models.Transaction, error){}
+	return product, nil
+}
+
+func (d *dodoClient) UpdateProduct(ctx context.Context, productId, name string, price int64) error {
+
+	return d.client.Products.Update(ctx, productId, dodopayments.ProductUpdateParams{
+		Name: dodopayments.F(name),
+		Price: dodopayments.F[dodopayments.PriceUnionParam](
+			dodopayments.PriceOneTimePriceParam{
+				Price:    dodopayments.F(price),
+				Currency: dodopayments.F(dodopayments.CurrencyUsd),
+				Discount: dodopayments.F[int64](0),
+			},
+		),
+	})
+}
+
+func (d *dodoClient) ArchiveProduct(ctx context.Context, productId string) error {
+	return d.client.Products.Archive(ctx, productId)
+}
+
+func (d *dodoClient) CreateCustomer(ctx context.Context, userId int64, name, email string) (*models.Customer, error) {
+	customer, err := d.client.Customers.New(ctx, dodopayments.CustomerNewParams{
+		Email: dodopayments.F(email),
+		Name:  dodopayments.F(name),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Customer{
+		UserId:       uint64(userId),
+		CustomerId:   customer.CustomerID,
+		BillingEmail: email,
+		CreatedAt:    customer.CreatedAt,
+	}, nil
+}
+
+func (d *dodoClient) CreateCustomerSession(ctx context.Context, customerId string) (string, error) {
+	customerPortal, err := d.client.Customers.CustomerPortal.New(ctx, customerId, dodopayments.CustomerCustomerPortalNewParams{})
+	if err != nil {
+		return "", err
+	}
+
+	return customerPortal.Link, nil
+
+}
+
+func (d *dodoClient) CreateCheckoutSession(ctx context.Context, userId int64, customerId string, redirect string, dodoProducts []dodopayments.CheckoutSessionRequestProductCartParam, orderId uint64) (checkoutURL string, err error) {
+	checkoutSession, err := d.client.CheckoutSessions.New(ctx, dodopayments.CheckoutSessionNewParams{
+		CheckoutSessionRequest: dodopayments.CheckoutSessionRequestParam{
+			Customer: dodopayments.F[dodopayments.CustomerRequestUnionParam](
+				dodopayments.AttachExistingCustomerParam{
+					CustomerID: dodopayments.F(customerId),
+				},
+			),
+			ReturnURL:   dodopayments.F(redirect),
+			ProductCart: dodopayments.F(dodoProducts),
+			Metadata: dodopayments.F(map[string]string{
+				"order_id": fmt.Sprintf("%d", orderId),
+				"user_id":  fmt.Sprint("%d", userId),
+			}),
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return checkoutSession.CheckoutURL, nil
+}
+
+func (d *dodoClient) HandleWebhook(w http.ResponseWriter, r *http.Request) (*models.Transaction, error) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return nil, errors.New("method not allowed")
+	}
+
+	webhookSignature := r.Header.Get("webhook-signature")
+	if !d.verifyWebhookSignature(webhookSignature, []byte(config.DodoWebhookSecret)) {
+		http.Error(w, "invalid webhook signauture", http.StatusMethodNotAllowed)
+		return nil, errors.New("invalid webhook signature")
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "failed to read request body", http.StatusBadRequest)
+		return nil, err
+	}
+	defer r.Body.Close()
+
+	// Parse webhook payload
+	var payload dto.WebhookPayload
+
+	if err := json.Unmarshal(body, &payload); err != nil {
+		http.Error(w, "invalid JSON payload", http.StatusBadRequest)
+		return nil, err
+	}
+
+	transaction := &models.Transaction{
+		OrderId:      payload.Data.Metadata.OrderId,
+		UserId:       payload.Data.Metadata.UserId,
+		CustomerId:   payload.Data.Customer.CustomerID,
+		PaymentId:    payload.Data.PaymentID,
+		TotalPrice:   payload.Data.TotalAmount,
+		SettledPrice: payload.Data.SettledAmount,
+		Currency:     string(payload.Data.Currency),
+		Status:       payload.Data.Status,
+	}
+
+	// Process the webhook based on event type
+	switch payload.Type {
+	case "payment_succeeded":
+		transaction.Status = string(payment.Success)
+	case "payment_failed":
+		transaction.Status = string(payment.Failed)
+	default:
+		log.Printf("unhandled webhook event type: %s", payload.Type)
+	}
+
+	// Return a 200 ok to acknowledge  recepit of the webhook
+	w.WriteHeader(http.StatusOK)
+	return transaction, nil
+
+}
+
+func (d *dodoClient) verifyWebhookSignature(Signature string, payload []byte) bool {
+	h := hmac.New(sha256.New, []byte(config.DodoWebhookSecret))
+	h.Write(payload)
+	expectedSignature := hex.EncodeToString(h.Sum(nil))
+
+	return hmac.Equal([]byte(Signature), []byte(expectedSignature))
+}
