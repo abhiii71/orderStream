@@ -125,7 +125,7 @@ func (d *dodoClient) CreateCheckoutSession(ctx context.Context, userId int64, cu
 			ProductCart: dodopayments.F(dodoProducts),
 			Metadata: dodopayments.F(map[string]string{
 				"order_id": fmt.Sprintf("%d", orderId),
-				"user_id":  fmt.Sprint("%d", userId),
+				"user_id":  fmt.Sprintf("%d", userId),
 			}),
 		},
 	})
