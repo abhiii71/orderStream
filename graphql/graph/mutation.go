@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/abhiii71/orderStream/graphql/generated"
-	"github.com/abhiii71/orderStream/graphql/models"
+	"github.com/abhiii71/orderStream/order/models"
 	payment "github.com/abhiii71/orderStream/payment/proto/pb"
 	"github.com/abhiii71/orderStream/pkg/auth"
 	"github.com/gin-gonic/gin"
@@ -134,15 +134,15 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, in generated.OrderIn
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
-	var products []*models.OrderedProducts
+	var products []*models.OrderedProduct
 	for _, product := range in.Products {
 		if product.Quantity <= 0 {
 			return nil, ErrInvalidParameter
 		}
 
-		products = append(products, &models.OrderedProducts{
+		products = append(products, &models.OrderedProduct{
 			ID:       product.ID,
-			Quantity: product.Quantity,
+			Quantity: uint32(product.Quantity),
 		})
 	}
 
