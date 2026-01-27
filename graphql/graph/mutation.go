@@ -10,6 +10,7 @@ import (
 	"github.com/abhiii71/orderStream/order/models"
 	payment "github.com/abhiii71/orderStream/payment/proto/pb"
 	"github.com/abhiii71/orderStream/pkg/auth"
+	"github.com/abhiii71/orderStream/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +32,7 @@ func (r *mutationResolver) Register(ctx context.Context, in generated.RegisterIn
 		return nil, err
 	}
 
-	ginContext, ok := ctx.Value("GinContextKey").(*gin.Context)
+	ginContext, ok := ctx.Value(middleware.GinContextKey).(*gin.Context)
 	if !ok {
 		return nil, errors.New("could not retrieve gin context")
 	}
@@ -50,7 +51,7 @@ func (r *mutationResolver) Login(ctx context.Context, in generated.LoginInput) (
 		return nil, err
 	}
 
-	ginContext, ok := ctx.Value("GinContextKey").(*gin.Context)
+	ginContext, ok := ctx.Value(middleware.GinContextKey).(*gin.Context)
 	if !ok {
 		return nil, errors.New("could not retrieve gin context")
 	}

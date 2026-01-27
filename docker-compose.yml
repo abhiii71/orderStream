@@ -1,0 +1,291 @@
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  base:
+    image: "order-stream-service:latest"
+    build:
+      context: .
+      dockerfile: docker/base.dockerfile
+    profiles:
+      - build-only
+    networks:
+      - app-network
+
+  zookeeper:
+    container_name: kafka-like-zookeeper
+    image: confluentinc/cp-zookeeper:7.9.4
+    ports:
+      - "21850:2181"
+    volumes:
+      - zookeeper-volume:/bitnami
+    environment:
+    - ZOOKEEPER_CLIENT_PORT=2181
+    - ALLOW_ANONYMOUS_LOGIN=yes
+    restart: always
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc -w 3 localhost 2181 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    container_name: kafka
+    hostname: kafka
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      zookeeper:
+        condition: service_started
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-volume:/bitnami
+    environment:
+    - KAFKA_BROKER_ID=1
+    - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    - KAFKA_LISTENERS=PLAINTEXT://:9092
+    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      # simple TCP check - ensure broker port is open internally
+      test: ["CMD-SHELL", "bash -lc 'timeout 2 bash -c \"</dev/tcp/localhost/9092\" >/dev/null 2>&1 || exit 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  account_db:
+    container_name: "account_db"
+    image: postgres:14.0
+    environment:
+      POSTGRES_DB: abhiii71
+      POSTGRES_USER: abhiii71
+      POSTGRES_PASSWORD: 140301
+    volumes:
+      - account_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abhiii71 -d abhiii71 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  order_db:
+    container_name: "order_db"
+    image: postgres:14.0
+    environment:
+      POSTGRES_DB: abhiii71
+      POSTGRES_USER: abhiii71
+      POSTGRES_PASSWORD: 140301
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abhiii71 -d abhiii71 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  payment_db:
+    container_name: "payment_db"
+    image: postgres:14.0
+    environment:
+      POSTGRES_DB: abhiii71
+      POSTGRES_USER: abhiii71
+      POSTGRES_PASSWORD: 140301
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abhiii71 -d abhiii71 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  recommender_db:
+    container_name: "recommender_db"
+    image: postgres:15
+    environment:
+      POSTGRES_DB: abhiii71
+      POSTGRES_USER: abhiii71
+      POSTGRES_PASSWORD: 140301
+    volumes:
+      - recommender_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abhiii71 -d abhiii71 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6 
+  
+  product_db:
+    container_name: product_db
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
+    environment:
+      - ES_JAVA_OPTS=-Xms1g -Xms1g
+      - discovery.type=single-node
+      - network.host=0.0.0.0
+    volumes:
+      - product_db_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sS http://localhost:9200/_cluster/health | grep -q '\"status\"' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  account:
+    container_name: "account"
+    image: "abhiii71/account:latest"
+    build:
+      context: .
+      dockerfile: docker/services/account.dockerfile
+    depends_on:
+      - account_db
+    environment:
+      DATABASE_URL: postgresql://abhiii71:140301@account_db/abhiii71?sslmode=disable
+    restart: on-failure
+    networks:
+      - app-network
+
+  product:
+    container_name: "product"
+    image: "abhiii71/product:latest"
+    build:
+      context: .
+      dockerfile: docker/services/product.dockerfile
+    depends_on:
+      - product_db
+      - kafka
+    environment:
+      ELASTICSEARCH_URL: http://product_db:9200
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: on-failure
+    networks:
+      - app-network
+
+  order:
+    container_name: "order"
+    image: "abhiii71/order:latest"
+    build:
+      context: .
+      dockerfile: docker/services/order.dockerfile
+    depends_on:
+      - order_db
+      - account
+      - product
+      - kafka
+    environment:
+      DATABASE_URL: postgresql://abhiii71:140301@order_db/abhiii71?sslmode=disable
+      ACCOUNT_URL: account:8080
+      PRODUCT_URL: product:8080
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: on-failure
+    networks:
+      - app-network
+
+  payment:
+    container_name: "payment"
+    image: "abhiii71/payment:latest"
+    build:
+      context: .
+      dockerfile: docker/services/payment.dockerfile
+    depends_on:
+      - payment_db
+      - order
+      - kafka
+    environment:
+      DATABASE_URL: postgresql://abhiii71:140301@payment_db/abhiii71?sslmode=disable
+      ORDER_SERVICE_URL: order:8080
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PRODUCT_EVENTS_TOPIC: product_events
+      DODO_API_KEY: test_api_key
+      DODO_WEBHOOK_SECRET: test_webhook_secret
+      DODO_CHECKOUT_URL: http://localhost:8081/checkout
+      DODO_TEST_MODE: "true"
+    restart: on-failure
+    networks:
+      - app-network
+
+  recommender-server:
+    container_name: "recommender"
+    image: "abhiii71/recommender:latest"
+    build:
+      context: .
+      dockerfile: docker/services/recommender.dockerfile
+    command: python app/entry/main.py
+    depends_on:
+      - recommender_db
+      - kafka
+    environment:
+      DATABASE_URL: postgresql://abhiii71:140301@recommender_db/abhiii71
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: on-failure
+    networks:
+      - app-network
+
+  recommender-sync:
+    container_name: "recommender-sync"
+    image: "abhiii71/recommender-sync:latest"
+    build:
+      context: .
+      dockerfile: docker/services/recommender.dockerfile
+    command: python app/entry/sync.py
+    depends_on:
+      - recommender_db
+      - kafka
+    environment:
+      DATABASE_URL: postgresql://abhiii71:140301@recommender_db/abhiii71?sslmode=disable
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: on-failure
+    networks:
+      - app-network
+
+  graphql:
+    container_name: "graphql"
+    image: "abhiii71/graphql:latest"
+    build:
+      context: .
+      dockerfile: docker/services/graphql.dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - account
+      - product
+      - order
+      - payment
+      - recommender-server
+      - recommender-sync
+    environment:
+      ACCOUNT_URL: account:8080
+      PRODUCT_URL: product:8080
+      ORDER_URL: order:8080
+      PAYMENT_URL: payment:8080
+      RECOMMENDER_URL: recommender:8080
+    restart: on-failure
+    networks:
+      - app-network
+
+volumes:
+  account_db_data:
+  product_db_data:
+  order_db_data:
+  payment_db_data:
+  recommender_db_data:
+  kafka-volume:
+  zookeeper-volume:
