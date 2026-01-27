@@ -4,7 +4,7 @@ COPY product product
 
 COPY pkg pkg
 
-RUN GO111MODULE= on go build -mod mod -o go/bin/app ./product/cmd/product
+RUN GO111MODULE=on go build -mod=mod -o /go/bin/app ./product/cmd/product
 
 FROM alpine:3.20 
 

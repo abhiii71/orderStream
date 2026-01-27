@@ -8,13 +8,13 @@ COPY order order
 
 COPY recommender recommender
 
-copy payment payment
+COPY payment payment
 
-copy graphql graphql 
+COPY graphql graphql 
 
-copy pkg pkg 
+COPY pkg pkg 
 
-RUN GO111MODULE=on go build -mod mod -o /go/bin/app ./graphql/cmd/graphql
+RUN GO111MODULE=on go build -mod=mod -o /go/bin/app ./graphql/cmd/graphql
 
 FROM alpine:3.20
 

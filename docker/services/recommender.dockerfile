@@ -1,13 +1,12 @@
-FROM order-stream-service:latest AS build
+FROM python:3.11-slim
 
-WORKDIR /app 
+WORKDIR /app
 
-RUN apt-get- update  && apt-get install -y build-essential libpq-dev && rm -rf /var/lib/apt/lists/* 
+RUN apt-get update && apt-get install -y build-essential libpq-dev && rm -rf /var/lib/apt/lists/*
 
-COPY  recommender/requirements.txt  .
-
+COPY recommender/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY recommender /app  
+COPY recommender /app
 
 ENV PYTHONPATH="/app:${PYTHONPATH}"

@@ -6,7 +6,7 @@ COPY payment payment
 
 COPY pkg pkg 
 
-RUN GO111MODULE=on go build -mod mod -o go/bin/app ./payment/cmd/payment
+RUN GO111MODULE=on go build -mod=mod -o /go/bin/app ./payment/cmd/payment
 
 FROM alpine:3.20
 

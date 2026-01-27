@@ -7,8 +7,8 @@ COPY product product
 COPY order order
 
 COPY pkg pkg 
-
-RUN GO111MODULE=on go build-mod  mod -o  go/bin/app ./order/cmd/order 
+ 
+RUN GO111MODULE=on go build -mod=mod -o /go/bin/app ./order/cmd/order
 
 FROM alpine:3.20
 
