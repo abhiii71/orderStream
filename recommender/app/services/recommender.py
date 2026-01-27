@@ -3,7 +3,7 @@ import pandas as pd
 from app.db.session import ReplicaSession
 from app.db.models import Interaction, Product
 
-def fetch_interactions() -> pd.Dataframe:
+def fetch_interactions() -> pd.DataFrame:
     with ReplicaSession() as session:
         interactions = session.query(Interaction).all()
         data = [

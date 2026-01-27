@@ -1,5 +1,6 @@
-import grpc 
+import grpc
 from concurrent import futures
+from generated.pb import recommender_pb2, recommender_pb2_grpc
 
 from generated.pb import recommender_pb2, recommender_pb2_grpc
 from app.services.recommender import recommender
@@ -20,7 +21,7 @@ def _fetch_grpc_products(product_ids):
             id=product.id,
             name=product.name,
             description=product.description,
-            price=product.price
+            price=product.price,
         )
         for product in products
     ]
@@ -29,7 +30,7 @@ def _fetch_grpc_products(product_ids):
 
 def _handle_exception(context, error_message):
     """Helper method to set gRPC status code and details."""
-    context.set_cod(grpc.StatusCode.INTERNAL)
+    context.set_code(grpc.StatusCode.INTERNAL)
     context.set_details(error_message)
 
 
@@ -37,59 +38,58 @@ class RecommenderServiceServicer(recommender_pb2_grpc.RecommenderServiceServicer
 
     def GetRecommendations(self, request, context):
         user_id = request.user_id
-        skip = request.skip or 0 # default to 0 if not set
-        take = request.take or 5 # default to 5 if not set
+        skip = request.skip or 0  # default to 0 if not set
+        take = request.take or 5  # default to 5 if not set
 
         try:
-            # Get recommendation product 
+            # Get recommended product IDs
             recommended_product_ids = recommender.recommend_on_user_id(
                 user_id=user_id,
                 skip=skip,
                 take=take
             )
 
-            #  Fetch product details as gRPC object 
+            # Fetch product details as gRPC objects
             grpc_products = _fetch_grpc_products(recommended_product_ids)
             return recommender_pb2.RecommendationResponse(
                 recommended_products=grpc_products
             )
-        
+
         except Exception as e:
-            _handle_exception(context,f"Failed to get recommendations: {str(e)}")
+            _handle_exception(context, f"Failed to get recommendations: {str(e)}")
             return recommender_pb2.RecommendationResponse()
-    
+
     def GetRecommendationsBasedOnViewed(self, request, context):
         viewed_product_ids = request.viewed_product_ids
         skip = request.skip or 0
-        take =  request.skip or 5
+        take = request.take or 5
 
         try:
             recommended_product_ids = recommender.recommend_on_viewed_ids(
-                viewed_ids = viewed_product_ids,
+                viewed_ids=viewed_product_ids,
                 skip=skip,
-                take=take 
+                take=take
             )
 
-            #Fetch product details  on gRPC objects 
+            # Fetch product details as gRPC objects
             grpc_products = _fetch_grpc_products(recommended_product_ids)
             return recommender_pb2.RecommendationResponse(
-                recommended_products = grpc_products 
+                recommended_products=grpc_products
             )
-        
+
         except Exception as e:
-            _handle_exception(context, f"Failed to get recommendation: ", {str(e)})
+            _handle_exception(context, f"Failed to get recommendations: {str(e)}")
             return recommender_pb2.RecommendationResponse()
-        
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     recommender_pb2_grpc.add_RecommenderServiceServicer_to_server(
         RecommenderServiceServicer(), server
     )
     server.add_insecure_port('[::]:50051')
-    print("grpc server started on port 50051")
+    print("gRPC server started on port 50051")
     server.start()
     server.wait_for_termination()
-
 
 if __name__ == '__main__':
     serve()
