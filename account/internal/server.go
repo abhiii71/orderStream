@@ -51,12 +51,14 @@ func (s *grpcServer) Login(ctx context.Context, request *pb.LoginRequest) (*wrap
 }
 
 func (s *grpcServer) GetAccount(ctx context.Context, request *wrapperspb.UInt64Value) (*pb.AccountResponse, error) {
-	account, err := s.service.GetAccount(ctx, request.Value)
+	id := request.GetValue()
+
+	account, err := s.service.GetAccount(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return &pb.AccountResponse{Account: &pb.Account{
-		Id:    uint64(int(account.ID)),
+		Id:    account.ID,
 		Name:  account.Name,
 		Email: account.Email,
 	}}, nil

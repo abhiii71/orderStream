@@ -31,7 +31,7 @@ func ListenGRPC(service Service, accountURL string, productURL string, port int)
 		return err
 	}
 
-	productClient, err := product.NewClient(accountURL)
+	productClient, err := product.NewClient(productURL)
 	if err != nil {
 		return err
 	}
