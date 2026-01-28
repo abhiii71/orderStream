@@ -88,7 +88,31 @@ func (s *productService) GetProduct(ctx context.Context, id string) (*models.Pro
 }
 
 func (s *productService) GetProducts(ctx context.Context, skip, take uint64) ([]models.Product, error) {
-	return s.repo.ListProducts(ctx, skip, take)
+	products, err := s.repo.ListProducts(ctx, skip, take)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send single products_listed event with all product IDs
+	go func() {
+		productIDs := make([]string, len(products))
+		for i, product := range products {
+			productIDs[i] = product.Id
+		}
+
+		err := kafka.SendMessageToRecommender(s, models.ProductsListedEvent{
+			Type: "products_listed",
+			Data: models.ProductsListedEventData{
+				ProductIDs: productIDs,
+				Count:      len(products),
+			},
+		}, "interaction_events")
+		if err != nil {
+			log.Println("failed to send event to recommendation service:", err)
+		}
+	}()
+
+	return products, nil
 }
 
 func (s *productService) GetProductsWithIds(ctx context.Context, ids []string) ([]models.Product, error) {
